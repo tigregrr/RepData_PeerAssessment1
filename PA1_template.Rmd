@@ -1,25 +1,261 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: 'Reproducible Research: Peer Assessment 1'
+author: "Luis Urbina"
+date: "Saturday, May 16, 2015"
+output: html_document
 ---
 
-
 ## Loading and preprocessing the data
+### 1.1)
+Given the data file 'activity.csv', the data is loaded using 
+the `read.csv()` function. The new dataset is named **da**.
 
+```{r}
+    wd <- getwd()
+    if(!is.null(wd)) setwd(wd)
+    da <- read.table(unz("activity.zip", "activity.csv"), header=T, sep=",")
+```
+
+### 1.2)
+In order to know the dataset behavior, a short exploratory data analysis
+of the dataset is done using the `str()`function.
+
+```{r}
+    str(da)
+```
+
+The data frame has 17,568 observaciones and three variables. The 
+variables steps and interval are the 'integer' data type. The 
+variable steps has also NA values. There is not need to transform 
+or process the **da** data frame in order to perform the analysis.
 
 
 ## What is mean total number of steps taken per day?
+### 2.1)
+The NA values are going to be ignnored in this part of the analysis. 
+To calculate the total number of steps taken per day, the `aggregate()` 
+function is used. The new data frame is named **tidy.steps**.
 
+The **total number of steps per day** is shown below. Notice that 
+there are some days that do not have counted steps and they are not 
+listed. In total are listed only 53 days, information obtained using 
+the `dim()` function.
+
+```{r,echo=TRUE}
+    tidy.steps <- aggregate(.~date, data=da, sum)
+    tidy.steps[,c(1,2)]
+    dim(tidy.steps)
+```
+
+### 2.2)
+A **histrogram of the total number of steps taken each day** is build 
+and shown next. Notice that the maximum frequency (y-axes) is around 
+10 according to the graphics. 
+
+```{r,echo=TRUE}
+    hist(tidy.steps$steps,breaks=20,col='coral',
+         xlab='Total #s Steps Per Day',
+         main='Histogram Without Replacement of Missing Values') 
+```
+
+### 2.3)
+Following is calculated the **mean** of the total number of steps taken 
+per each day using the `aggrregate()` function. Results are shown:
+
+```{r,echo=TRUE}
+    tidy.date.mean <- aggregate(.~date, data=da, mean)
+    tidy.date.mean[,c(1,2)]
+```
+
+It is also calculated the **median** of the total number of steps taken 
+per each day using the `aggrregate()` function. Results are shown:
+
+```{r,echo=TRUE}
+    tidy.date.median <- aggregate(.~date, data=da, median)
+    tidy.date.median[,c(1,2)]
+```
 
 
 ## What is the average daily activity pattern?
+### 3.1)
+It is calculated the **mean of the number of steps taken for each 
+5-minute interval**. The new data frame is named **tidy.interval**. 
+It is determined it has 288 observations using the `dim()` function.
+
+```{r,echo=TRUE}
+    tidy.interval <- aggregate(.~interval, data=da, mean)
+    dim(tidy.interval)
+```
+
+A **time series plot** of the 5-minute interval (x-axis) and the 
+average number of steps taken, averaged across all days (y-axis) 
+is shown next:
+
+```{r,echo=TRUE,fig.align='center'}    
+    plot(tidy.interval[,c(1,2)], type='l', col='red',
+         main='Stepts Average by Day Intervals',
+         xlab='Interval (Day)',
+         ylab='Steps (Average)')
+```
+
+### 3.2)
+The **maximum number of steps** each 5-minute interval, on average across 
+all the days, is calculated next.
+
+```{r,echo=TRUE, results='asis'}    
+    max(tidy.interval[,2])
+```
 
 
 
 ## Imputing missing values
+### 4.1)
+To calculate the **total number of missing values** in the dataset, it is 
+used the `apply()` function. First it is identified the rows with NA 
+values, and next they are counted using the `sum()` funciton. 
+
+```{r,echo=TRUE}    
+    na.identifier <- apply(da, 1, function(x){any(is.na(x))})
+    total.na <- sum(na.identifier)
+    total.na
+```
+
+
+The total number of missing values is 2304.
+ 
+
+### 4.2)
+The strategy to fill the missing values is: first, calculate the mean
+for the 5-minute interval; second, replace the 5-minute interval mean
+in each missing value using a for-loop. It creates a new data set.
+
+Firs, it is calculated the mean for the 5-minute interval. It is named
+the **interval.mean**. Code is next:
+
+```{r,echo=TRUE}    
+    interval.mean <- mean(tidy.interval$steps)
+    interval.mean
+```
+
+Now this interval.mean value will be replaced in any NA value in the 
+dataset **da**, using a `for()` loop. 
+
+### 4.3)
+A new dataset is created in which all the NA values in **da** have 
+been replaced using a for-loop. The new dataset is named **da.full**. 
+The algorithm is next:
+
+```{r,echo=TRUE}
+    da.full <- da
+    for (i in 1:(length(da.full[,1]) )) {
+        if (is.na(da.full$steps[i])) 
+            da.full$steps[i] <- interval.mean
+    }
+```
+
+
+### 4.4) What is the impact of imputing missing data on the estimates of the total daily number of steps?
+### 4.4.1) Histogram
+With replacement of missing values, the frequency of the steps per day
+have increased, keeping the same distribution. As can be see in the
+graphics below, the top frequency is over 15. 
+
+```{r,echo=TRUE}
+    tidy.steps.full <- aggregate(.~date, data=da.full, sum)
+    hist(tidy.steps.full$steps,n=20,col='coral', 
+         xlab='Steps (Day)',
+         main='Histogram With Replacement of Missing Values') 
+```
+
+
+### 4.4.2) Mean
+```{r,echo=TRUE}
+    tidy.date.mean.full <- aggregate(.~date, data=da.full, mean)
+    tidy.date.mean.full[,c(1,2)]
+```
+
+Both averages, with replacement and without replacement, of the steps
+media for interval are the same. Numeric comparison is shown below.
+
+```{r,echo=TRUE}
+    mean(tidy.date.mean$steps)
+    mean(tidy.date.mean.full$steps)
+```
+
+### 4.4.3) Median
+```{r,echo=TRUE}
+    tidy.date.median.full <- aggregate(.~date, data=da.full, median)
+    tidy.date.median.full[,c(1,2)]
+```
+
+The averages of the median change, with replacement and without 
+replacement, of the steps median for interval. Numeric comparison is 
+shown below.
+
+
+```{r,echo=TRUE}
+    mean(tidy.date.median$steps)
+    mean(tidy.date.median.full$steps)
+```
 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+### 5.1)
+
+The next algorithm is going to create a new factor variable in the 
+**da.full** dataset with two levels, "weekday" and "weekend", indicating
+whether a given date is a weekday or weekend day. This new variable 
+is named **day**. For this purpose, it is used the `weekdays()` function.
+
+```{r,echo=TRUE}    
+    da.full$aux <- weekdays(as.Date(da.full$date))
+    days <- c('Monday','Tuesday','Wednesday','Thursday','Friday')
+    da.full$day <- ""
+    
+    for (i in 1:(length(da.full[,1]) )) {
+        if (da.full$aux[i] %in% days) 
+            da.full$day[i] <- "weekday"
+        else
+            da.full$day[i] <- "weekend"
+    }
+```
+
+Two subdatasets are going to be created from the updated  **da.full** 
+dataset; one for weekday and other for weekend. They are named 
+**da.weekday** and **da.weekend**. The first rows of the those new 
+datasets are shown below. 
+
+```{r,echo=TRUE}
+    da.weekday <- da.full[da.full$day=='weekday',]
+    dim(da.weekday)
+    head(da.weekday)
+
+    da.weekend <- da.full[da.full$day=='weekend',]
+    dim(da.weekend)
+    head(da.weekend)
+```
+
+
+### 5.2)
+A penel plot is making next using the subdatasets shown above. 
+
+```{r,echo=TRUE, fig.align='center'} 
+    da.weekday <- da.weekday[,c(1,2,3)]
+    tidy.weekday <- aggregate(.~interval, data=da.weekday, mean)
+
+    da.weekend <- da.weekend[,c(1,2,3)]
+    tidy.weekend <- aggregate(.~interval, data=da.weekend, mean)
+        
+    par(mfrow=c(2,1))
+    
+    plot(tidy.weekday[,c(1,2)], type='l', col='blue',
+         main='Weekday',
+         xlab='Interval',
+         ylab='Steps (Avg.)')
+        
+    plot(tidy.weekend[,c(1,2)], type='l', col='red',
+         main='Weekend',
+         xlab='Interval',
+         ylab='Steps (Avg.)')
+```
