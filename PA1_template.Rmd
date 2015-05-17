@@ -91,7 +91,7 @@ A **time series plot** of the 5-minute interval (x-axis) and the
 average number of steps taken, averaged across all days (y-axis) 
 is shown next:
 
-```{r,echo=TRUE,fig.align='center'}    
+```{r,echo=TRUE, fig.align='center'}    
     plot(tidy.interval[,c(1,2)], type='l', col='red',
          main='Stepts Average by Day Intervals',
          xlab='Interval (Day)',
@@ -221,41 +221,30 @@ is named **day**. For this purpose, it is used the `weekdays()` function.
     }
 ```
 
-Two subdatasets are going to be created from the updated  **da.full** 
-dataset; one for weekday and other for weekend. They are named 
-**da.weekday** and **da.weekend**. The first rows of the those new 
-datasets are shown below. 
+Below is shown few rows of the new dataset **da.full** showing the new
+created factor **day** and the dataset dimension.
 
 ```{r,echo=TRUE}
-    da.weekday <- da.full[da.full$day=='weekday',]
-    dim(da.weekday)
-    head(da.weekday)
-
-    da.weekend <- da.full[da.full$day=='weekend',]
-    dim(da.weekend)
-    head(da.weekend)
+    dim(da.full)
+    head(da.full)
 ```
 
-
 ### 5.2)
-A penel plot is making next using the subdatasets shown above. 
+A **panel plot** containing a time series plot fo the 5-minute interval and the average number of steps taken, average, is shown below.
 
-```{r,echo=TRUE, fig.align='center'} 
-    da.weekday <- da.weekday[,c(1,2,3)]
-    tidy.weekday <- aggregate(.~interval, data=da.weekday, mean)
-
-    da.weekend <- da.weekend[,c(1,2,3)]
-    tidy.weekend <- aggregate(.~interval, data=da.weekend, mean)
-        
-    par(mfrow=c(2,1))
+```{r,echo=TRUE, fig.align='center'}
+    require(stats)
+    require(lattice)
+    da.weekend <- aggregate(.~interval, 
+                     data=da.full[da.full$day=='weekend',c(1,2,3)],mean)
+    da.weekday <- aggregate(.~interval, 
+                     data=da.full[da.full$day=='weekday',c(1,2,3)],mean)
     
-    plot(tidy.weekday[,c(1,2)], type='l', col='blue',
-         main='Weekday',
-         xlab='Interval',
-         ylab='Steps (Avg.)')
-        
-    plot(tidy.weekend[,c(1,2)], type='l', col='red',
-         main='Weekend',
-         xlab='Interval',
-         ylab='Steps (Avg.)')
+    da.weekend$day <- 'weekend'
+    da.weekday$day <- 'weekday'
+    
+    da.day <- rbind(da.weekday, da.weekend)
+    xyplot(steps~interval|day, data=da.day, type='l', col='blue',
+           layout=c(1,2), main='Time Series',
+           xlab='Interval',ylab='Number of Steps (Avg.)')
 ```
