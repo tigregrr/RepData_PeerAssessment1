@@ -47,28 +47,28 @@ the `dim()` function.
     dim(tidy.steps)
 ```
 
-### 2.2)
+### 2.2) Histogram
 A **histrogram of the total number of steps taken each day** is build 
 and shown next. Notice that the maximum frequency (y-axes) is around 
 10 according to the graphics. 
 
 ```{r,echo=TRUE}
     hist(tidy.steps$steps,breaks=20,col='coral',
-         xlab='Total #s Steps Per Day',
-         main='Histogram Without Replacement of Missing Values') 
+         xlab='Steps Per Day',
+         main='Histogram') 
 ```
 
-### 2.3)
-Following is calculated the **mean** of the total number of steps taken 
-per each day using the `aggrregate()` function. Results are shown:
+### 2.3) Mean and Median 
+Following is reported the **mean** of the total number of 
+**steps taken per each day**. Results are shown:
 
 ```{r,echo=TRUE}
     tidy.date.mean <- aggregate(.~date, data=da, mean)
     tidy.date.mean[,c(1,2)]
 ```
 
-It is also calculated the **median** of the total number of steps taken 
-per each day using the `aggrregate()` function. Results are shown:
+It is also reported the **median** of the total number of 
+**steps taken per each day**. Results are shown:
 
 ```{r,echo=TRUE}
     tidy.date.median <- aggregate(.~date, data=da, median)
@@ -77,7 +77,7 @@ per each day using the `aggrregate()` function. Results are shown:
 
 
 ## What is the average daily activity pattern?
-### 3.1)
+### 3.1) Time Series Plot
 It is calculated the **mean of the number of steps taken for each 
 5-minute interval**. The new data frame is named **tidy.interval**. 
 It is determined it has 288 observations using the `dim()` function.
@@ -93,12 +93,12 @@ is shown next:
 
 ```{r,echo=TRUE, fig.align='center'}    
     plot(tidy.interval[,c(1,2)], type='l', col='red',
-         main='Stepts Average by Day Intervals',
-         xlab='Interval (Day)',
+         main='Time Series',
+         xlab='5-Minute Interval (Day)',
          ylab='Steps (Average)')
 ```
 
-### 3.2)
+### 3.2) Maximum Number of Steps
 The **maximum number of steps** each 5-minute interval, on average across 
 all the days, is calculated next.
 
@@ -109,7 +109,7 @@ all the days, is calculated next.
 
 
 ## Imputing missing values
-### 4.1)
+### 4.1) Total Number of Missing Values
 To calculate the **total number of missing values** in the dataset, it is 
 used the `apply()` function. First it is identified the rows with NA 
 values, and next they are counted using the `sum()` funciton. 
@@ -124,10 +124,12 @@ values, and next they are counted using the `sum()` funciton.
 The total number of missing values is 2304.
  
 
-### 4.2)
-The strategy to fill the missing values is: first, calculate the mean
-for the 5-minute interval; second, replace the 5-minute interval mean
-in each missing value using a for-loop. It creates a new data set.
+### 4.2) Strategy for Imputing Missing Data
+The strategy to fill the missing values is: 
+
+a) first, calculate the mean for the 5-minute interval
+
+b) second, replace the 5-minute interval mean in each missing value using a for-loop. It creates a new data set.
 
 Firs, it is calculated the mean for the 5-minute interval. It is named
 the **interval.mean**. Code is next:
@@ -140,7 +142,7 @@ the **interval.mean**. Code is next:
 Now this interval.mean value will be replaced in any NA value in the 
 dataset **da**, using a `for()` loop. 
 
-### 4.3)
+### 4.3) Replacing Missing Values
 A new dataset is created in which all the NA values in **da** have 
 been replaced using a for-loop. The new dataset is named **da.full**. 
 The algorithm is next:
@@ -155,7 +157,7 @@ The algorithm is next:
 
 
 ### 4.4) What is the impact of imputing missing data on the estimates of the total daily number of steps?
-### 4.4.1) Histogram
+### 4.4.1) Histogram After Replaced Missing Values
 With replacement of missing values, the frequency of the steps per day
 have increased, keeping the same distribution. As can be see in the
 graphics below, the top frequency is over 15. 
@@ -201,7 +203,7 @@ shown below.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-### 5.1)
+### 5.1) Algorithem
 
 The next algorithm is going to create a new factor variable in the 
 **da.full** dataset with two levels, "weekday" and "weekend", indicating
@@ -229,7 +231,7 @@ created factor **day** and the dataset dimension.
     head(da.full)
 ```
 
-### 5.2)
+### 5.2) Panel Plot to Compare Interval Acrross Weekdays and Weekends
 A **panel plot** containing a time series plot fo the 5-minute interval and the average number of steps taken, average, is shown below.
 
 ```{r,echo=TRUE, fig.align='center'}
